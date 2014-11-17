@@ -29,8 +29,8 @@ bool ChannelMananger::Login(ChannelNumber channelNumber, ID id, struct sockaddr_
 
 bool ChannelMananger::IsRightID(ChannelNumber channelNumber, ID id)
 {
-	if (m_IDCheckList.find(channelNumber) != m_IDCheckList.end())
-		return m_IDCheckList[channelNumber] == id;
+	if (m_IDCheckList.find(id) != m_IDCheckList.end())
+		return m_IDCheckList[id] == channelNumber;
 	return false;
 }
 
@@ -47,7 +47,7 @@ bool ChannelMananger::LoadIDCheckList()
 			ChannelNumber cn;
 			ID id;
 			file >> cn >> id;
-			m_IDCheckList.insert(IDCheckList::value_type(cn, id));
+			m_IDCheckList.insert(IDCheckList::value_type(id, cn));
 		}
 	}
 
@@ -67,7 +67,7 @@ bool ChannelMananger::IsLogin(ChannelNumber channelNumber, ID id, struct sockadd
 		auto clientData = it->second;
 		if (memcmp(&clientData.m_SocketAddress, &clientaddr, sizeof(struct sockaddr_in)) == 0
 			&& clientData.m_ID == id)
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
