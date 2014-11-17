@@ -18,6 +18,10 @@ int main(int argc, char **argv)
 
 	ChannelMananger::GetInstance()->Init();
 
+	/// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return -1;
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd < 0)
@@ -46,7 +50,7 @@ int main(int argc, char **argv)
 		if (IsLoginPacket(buf, n))
 		{
 			LoginPacket packet;
-			memcpy(buf, &packet, sizeof(LoginPacket));
+			memcpy(&packet, buf, sizeof(LoginPacket));
 
 			bool ret = ChannelMananger::GetInstance()->Login(packet.m_ChannelNumber, packet.m_ID, clientaddr);
 
@@ -59,7 +63,7 @@ int main(int argc, char **argv)
 				continue;
 
 			NormalPacketHeader header;
-			memcpy(buf, &header, sizeof(header));
+			memcpy(&header, buf, sizeof(header));
 			
 			if (ChannelMananger::GetInstance()->IsLogin(header.m_ChannelNumber, header.m_ID, clientaddr) == false)
 				continue;
@@ -86,8 +90,9 @@ bool IsLoginPacket(char* buf, int length)
 		return false;
 
 	int first4Byte;
-	memcpy(buf, &first4Byte, sizeof(first4Byte));
+	memcpy(&first4Byte, buf, sizeof(first4Byte));
 
 	if (first4Byte == LOGIN_UNIQUE_KEY)
 		return true;
+	return false;
 }
