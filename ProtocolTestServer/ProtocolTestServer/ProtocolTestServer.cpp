@@ -52,10 +52,19 @@ int main(int argc, char **argv)
 			LoginPacket packet;
 			memcpy(&packet, buf, sizeof(LoginPacket));
 
+			printf("login! CI : %d/%d\n", packet.m_ChannelNumber, packet.m_ID);
+
 			bool ret = ChannelMananger::GetInstance()->Login(packet.m_ChannelNumber, packet.m_ID, clientaddr);
 
 			if (ret == true)
+			{
+				ChannelMananger::GetInstance()->SetPacketMissingRate(packet.m_ChannelNumber, packet.m_RateOfMissing);
+				printf("Packet Rate : Channel : %d - %d%%", packet.m_ChannelNumber, ChannelMananger::GetInstance()->GetPacketMissingRate(packet.m_ChannelNumber));
+				printf("login Success! CI : %d/%d\n", packet.m_ChannelNumber, packet.m_ID);
 				sendto(sockfd, buf, sizeof(LoginPacket), 0, (struct sockaddr *)&clientaddr, clilen);
+			}
+			else
+				printf("login! FAIL CI : %d/%d\n", packet.m_ChannelNumber, packet.m_ID);
 		}
 		else
 		{
@@ -65,15 +74,29 @@ int main(int argc, char **argv)
 			NormalPacketHeader header;
 			memcpy(&header, buf, sizeof(header));
 			
+			printf("DATA : CI : %d / %d [%d]\n", header.m_ChannelNumber, header.m_ID, n);
+			
+
 			if (ChannelMananger::GetInstance()->IsLogin(header.m_ChannelNumber, header.m_ID, clientaddr) == false)
 				continue;
-
-			auto users = ChannelMananger::GetInstance()->GetChannelUsers(header.m_ChannelNumber);
-			for (auto it = users.first; it != users.second; it++)
+			for (int i = 0; i < n; i++)
 			{
-				if (memcmp(&it->second.m_SocketAddress, &clientaddr, sizeof(struct sockaddr_in)) != 0)
+				printf("%d/", (int)buf[i]);
+			}
+			printf("\n");
+
+			int randvalue = rand() % 100;
+			if (ChannelMananger::GetInstance()->GetPacketMissingRate(header.m_ChannelNumber) > randvalue)
+			{
+				auto users = ChannelMananger::GetInstance()->GetChannelUsers(header.m_ChannelNumber);
+				for (auto it = users.first; it != users.second; it++)
 				{
-					sendto(sockfd, buf + sizeof(header), n - sizeof(header), 0, (struct sockaddr *)&it->second.m_SocketAddress, sizeof(it->second.m_SocketAddress));
+					if (memcmp(&it->second.m_SocketAddress, &clientaddr, sizeof(struct sockaddr_in)) != 0)
+					{
+						int a = sendto(sockfd, buf + sizeof(header), n - sizeof(header), 0, (struct sockaddr *)	&it->second.m_SocketAddress, sizeof(it->second.m_SocketAddress));
+						if (a < 0)
+							printf("oh");
+					}
 				}
 			}
 		}

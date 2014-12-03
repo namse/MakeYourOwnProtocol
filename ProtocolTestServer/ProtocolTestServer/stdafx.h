@@ -24,6 +24,7 @@ struct LoginPacket
 	int m_UniqueKey;
 	ChannelNumber m_ChannelNumber;
 	ID m_ID;
+	int m_RateOfMissing;
 };
 struct NormalPacketHeader
 {
@@ -38,3 +39,5 @@ struct SessionInfo{
 typedef std::multimap<ChannelNumber, SessionInfo> SessionList;
 
 typedef std::map<ID, ChannelNumber> IDCheckList;
+typedef int MissingRate;
+typedef std::map<ChannelNumber, MissingRate> PacketMissingRateList;

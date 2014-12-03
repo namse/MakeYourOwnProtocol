@@ -16,13 +16,20 @@ bool ChannelMananger::Login(ChannelNumber channelNumber, ID id, struct sockaddr_
 	if (IsRightID(channelNumber, id) == false)
 		return false;
 
-	if (IsLogin(channelNumber, id, clientaddr) == true)
-		return true;
+	auto ids = m_SessionList.equal_range(channelNumber);
+	for (auto it = ids.first; it != ids.second; it++)
+	{
+		auto clientData = it->second;
+		if (clientData.m_ID == id)
+		{
+			it->second.m_SocketAddress = clientaddr;
+			return true;
+		}
+	}
 
 	SessionInfo info;
 	info.m_ID = id;
 	info.m_SocketAddress = clientaddr;
-
 	m_SessionList.insert(SessionList::value_type(channelNumber, info));
 	return true;
 }
