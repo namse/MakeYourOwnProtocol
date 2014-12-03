@@ -36,12 +36,10 @@ int kbhit(void)
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     fcntl(STDIN_FILENO, F_SETFL, oldf);
     
-    if(ch != EOF)
-    {
+    if (ch != EOF) {
         ungetc(ch, stdin);
         return 1;
     }
-    
     return 0;
 }
 
@@ -67,8 +65,6 @@ struct state_action {           // Protocol FSM Structure
     void (* action)(void *p);
     enum proto_state next_state;
 };
-
-
 
 #define MAX_DATA_SIZE   (500)
 struct packet {                 // 504 Byte Packet to & from Simulator
@@ -122,9 +118,7 @@ void send_packet(int flag, void *p, int size)
         buf.size = size;
         memcpy(buf.data, p, (size > MAX_DATA_SIZE) ? MAX_DATA_SIZE : size);
         Send((char*)&buf, size + sizeof(unsigned short) * 2);
-    }
-    else
-    {
+    } else {
         Send((char*)&buf.type, sizeof(unsigned short));
     }
 }
@@ -189,71 +183,48 @@ struct p_event *get_event(void)
 {
     static struct p_event event;    // not thread-safe
     
-    int i;
-    
 loop:
     // Check if there is user command
-    if(!kbhit())
-    {
+    if (!kbhit()) {
         // Check if timer is timed-out
-        if(timedout)
-        {
+        if(timedout) {
             timedout = 0;
-            i = TIMEOUT;
+            event.event = TIMEOUT;
             goto got_it;
-        }
-        else
-        {
+        } else {
             // Check Packet arrival by event_wait()
             ssize_t n = Recv((char*)&event.packet, MAX_DATA_SIZE);
-            if( n > 0)
-            {
+            if (n > 0) {
                 // if then, decode header to make event
                 switch (event.packet.type) {
-                    case F_CON:
-                        i = RCV_CON;
-                        break;
-                    case F_ACK:
-                        i = RCV_ACK;
-                        break;
-                    case F_FIN:
-                        i = RCV_FIN;
-                        break;
-                    case F_DATA:
-                        i = RCV_DATA;
-                        break;
+                    case F_CON:  event.event = RCV_CON;  break;
+                    case F_ACK:  event.event = RCV_ACK;  break;
+                    case F_FIN:  event.event = RCV_FIN;  break;
+                    case F_DATA: event.event = RCV_DATA; break;
                     default:
                         goto loop;
                 }
                 goto got_it;
             }
         }
-    }
-    else
-    {
+    } else {
         int n = getchar();
         switch (n) {
-            case '0':
-                i = CONNECT;
-                break;
-            case '1':
-                i = CLOSE;
-                break;
+            case '0': event.event = CONNECT; break;
+            case '1': event.event = CLOSE;   break;
             case '2':
-                i = SEND;
+                event.event = SEND;
+                event.size = 0;
                 break;
-            case '3':
-                return NULL;
+            case '3': return NULL;  // QUIT
             default:
                 goto loop;
         }
         goto got_it;
-        
     }
     goto loop;
     
 got_it:
-    event.event = i;
     return &event;
 }
 
@@ -264,7 +235,7 @@ Protocol_Loop(void)
 
     timer_init();
     while (1) {
-        printf("Current Stat = %s\n", st_name[c_state]);
+        printf("Current State = %s\n", st_name[c_state]);
 
         /* Step 0: Get Input Event */
         if((eventp = get_event()) == NULL)
@@ -287,22 +258,25 @@ main(int argc, char *argv[])
     ChannelNumber channel;
     ID id;
     int rateOfPacketLoss;
+
     printf("Channel : ");
     scanf("%d",&channel);
     printf("ID : ");
     scanf("%d",&id);
     printf("Rate of Packet Loss (0 ~ 100)%% : ");
     scanf("%d",&rateOfPacketLoss);
-    
+    if (rateOfPacketLoss < 0)
+        rateOfPacketLoss = 0;
+    else if (rateOfPacketLoss > 100)
+        rateOfPacketLoss = 100;
+        
     
     // SIMULATOR_INITIALIZE
-    if( -1 == Login(channel, id, rateOfPacketLoss))
-    {
-        printf("Login Fail\n");
+    if (Login(channel, id, rateOfPacketLoss) == -1) {
+        printf("Login Failed\n");
         return -1;
     }
 
-    
     printf("Entering protocol loop...\n");
     printf("type number '[0]CONNECT', '[1]CLOSE', '[2]SEND', or '[3]QUIT'\n");
     Protocol_Loop();

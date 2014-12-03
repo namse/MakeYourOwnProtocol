@@ -19,7 +19,6 @@ int Login(unsigned int channel, unsigned int id, int lossRate)
     }
     
     // init serveraddr
-    memset(&serveraddr, 0, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_addr.s_addr = inet_addr(SERVER_IP);
     serveraddr.sin_port = htons(PORT);
@@ -40,7 +39,6 @@ int Login(unsigned int channel, unsigned int id, int lossRate)
     while (tryCount < LOGIN_MAX_TRY_COUNT)
     {
         tryCount++;
-        
         
         ssize_t sendLen = sendto(sockfd, (char*)&outPacket, sizeof(outPacket), 0, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
         if(sendLen < 0)
@@ -79,7 +77,6 @@ int Send(char* buf, size_t length)
     outPacket.m_ChannelNumber = g_channel;
     outPacket.m_ID = g_id;
     memcpy(outPacket.m_Data, buf, length);
-    
     
     ssize_t n = sendto(sockfd, (char*)&outPacket, length + sizeof(ChannelNumber) + sizeof(ID), 0, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
     if(n < 0 || n != length)
