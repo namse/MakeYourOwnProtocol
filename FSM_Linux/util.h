@@ -6,9 +6,9 @@
 // Copyright (c) 2014. Nam SeHyun All rights reserved.
 // No License.
 
-
 #ifndef ProtocolClient_util_h
 #define ProtocolClient_util_h
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <fcntl.h>
@@ -57,6 +57,5 @@ typedef struct t_NormalPacket
 	ID m_ID;
     char m_Data[MAX_PACKET_SIZE - sizeof(ChannelNumber) - sizeof(ID)];
 }NormalPacket;
-
 
 #endif
