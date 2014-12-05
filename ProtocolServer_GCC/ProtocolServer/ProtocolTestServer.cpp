@@ -73,10 +73,18 @@ int main(int argc, char **argv)
 			NormalPacketHeader header;
 			memcpy(&header, buf, sizeof(header));
 			
+            std::cout<<"DATA : CI : " << header.m_ChannelNumber <<" / " << header.m_ID <<" [" <<n<< "]\n" << std::endl;
+            
+            for (int i = 0; i < n; i++)
+            {
+                std::cout << (int)buf[i] << "/";
+            }
+            std::cout << std::endl;
+            
 			if (ChannelMananger::GetInstance()->IsLogin(header.m_ChannelNumber, header.m_ID, clientaddr) == false)
 				continue;
             int randvalue = rand() % 100;
-            if (ChannelMananger::GetInstance()->GetPacketMissingRate(header.m_ChannelNumber) > randvalue)
+            if (ChannelMananger::GetInstance()->GetPacketMissingRate(header.m_ChannelNumber) < randvalue)
             {
                 auto users = ChannelMananger::GetInstance()->GetChannelUsers(header.m_ChannelNumber);
                 for (auto it = users.first; it != users.second; it++)
