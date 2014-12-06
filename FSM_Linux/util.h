@@ -9,30 +9,31 @@
 #ifndef ProtocolClient_util_h
 #define ProtocolClient_util_h
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <termios.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/errno.h>
 #include <sys/types.h>
-#include <stdio.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+int kbhit(void);
 
 #define MAX_PACKET_SIZE 1024
 #define LOGIN_UNIQUE_KEY 0x10204080
 #define PORT 9999
-#define SERVER_IP "10.73.42.50"
+#define SERVER_IP "125.209.193.18"
 #define LOGIN_MAX_TRY_COUNT 10
 
 typedef unsigned int ChannelNumber;
 typedef unsigned int ID;
-
-// global variables
-int sockfd;
-struct sockaddr_in serveraddr;
-ChannelNumber g_channel;
-ID g_id;
 
 // success = 0, fail = -1
 int Login(ChannelNumber channel, ID id, int lossRate);
@@ -49,13 +50,13 @@ typedef struct t_LoginPacket
 	ChannelNumber m_ChannelNumber;
 	ID m_ID;
     int m_LossRate;
-}LoginPacket;
+} LoginPacket;
 
 typedef struct t_NormalPacket
 {
 	ChannelNumber m_ChannelNumber;
 	ID m_ID;
     char m_Data[MAX_PACKET_SIZE - sizeof(ChannelNumber) - sizeof(ID)];
-}NormalPacket;
+} NormalPacket;
 
 #endif
