@@ -5,8 +5,8 @@ all: fsm
 CFLAGS = -g 
 
 fsm: fsm.c util.o
+util.o: util.h
 
-#util.o : util.c
 .o : .c
 
 clean: 
