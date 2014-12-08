@@ -43,21 +43,26 @@ bool ChannelMananger::IsRightID(ChannelNumber channelNumber, ID id)
 
 bool ChannelMananger::LoadIDCheckList()
 {
-	// TODO
 	std::ifstream file("IDList.txt");
 	if (file.is_open())
 	{
 		int n;
 		file >> n;
-		for (int i = 0; i < n; i++)
+		std::cout << n << "\n";
+		for (int i = 0; i < n * 2; i++)
 		{
 			ChannelNumber cn;
 			ID id;
 			file >> cn >> id;
+			std::cout << cn << "/" << id << "\n";
 			m_IDCheckList.insert(IDCheckList::value_type(id, cn));
 		}
+		std::cout << std::endl;
 	}
-
+	else
+	{
+		std::cout << "loadFile Error" << std::endl;
+	}
 	return true;
 }
 
